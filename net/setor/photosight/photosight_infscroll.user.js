@@ -2,7 +2,7 @@
 // @name          photosight_infscroll
 // @description   Бесконечный скроллинг на сайте photosight.ru
 // @author        Sergei Kuznetsov
-// @version       1.0
+// @version       1.1
 // @namespace     net.setor.photosignt
 // @include       http://www.photosight.ru/*
 // ==/UserScript==
@@ -13,25 +13,25 @@ var scrollerTask = function () {
 	var PAGER_SELECTOR    = '.pages.width720.mb20';
 	var NEXTPAGE_SELECTOR = PAGER_SELECTOR + ' .fr.ar a';
 
-	var DEBUG_MODE = true;
+	var DEBUG_MODE = false;
+	var version    = '1.1';
 
-	var stop    = false;
-	var pause   = false;
-	var _window = null;
-	var jQuery  = null;
+	var stop     = false;
+	var pause    = false;
+	var _window  = null;
+	var _jQuery  = null;
 
-	var log = function (msg) {
+	var log = function(msg) {
 		if (DEBUG_MODE) {
 			console.log('Photosight: ' + msg);
 		}
 	};
 
-	var hasPhotoGrid = function () {
-		console.log(jQuery);
-		return ( jQuery(PAGER_SELECTOR).size() > 0 );
+	var hasPhotoGrid = function() {
+		return ( _jQuery(PAGER_SELECTOR).size() > 0 );
 	};
 
-	var scrollPhotoGrid = function () {
+	var scrollPhotoGrid = function() {
 
 		if (stop) {
 			log('stop');
@@ -46,12 +46,12 @@ var scrollerTask = function () {
 		pause = true;
 
 		// Если осталась только ссылка "предыдущая"
-		if ('Предыдущая' == jQuery(NEXTPAGE_SELECTOR).text()) {
+		if ('Предыдущая' == _jQuery(NEXTPAGE_SELECTOR).text()) {
 			stop = true;
 			return false;
 		}
 
-		var nextPage = jQuery(NEXTPAGE_SELECTOR).attr('href');
+		var nextPage = _jQuery(NEXTPAGE_SELECTOR).attr('href');
 
 		if (!nextPage) {
 			log('pager not found');
@@ -61,17 +61,17 @@ var scrollerTask = function () {
 
 		log('pager found: ' + nextPage);
 
-		jQuery.get(nextPage, function (data) {
+		_jQuery.get(nextPage, function (data) {
 
 			_window.history.replaceState(nextPage, document.title, nextPage);
 
-			var jData = jQuery(data);
+			var jData = _jQuery(data);
 
 			// Дополняем текущий список новыми фотками
-			jQuery(GRID_SELECTOR).append(jData.find(GRID_SELECTOR).html());
+			_jQuery(GRID_SELECTOR).append(jData.find(GRID_SELECTOR).html());
 
 			// Заменяем старый пагинатор новым
-			jQuery(PAGER_SELECTOR).html(jData.find(PAGER_SELECTOR).html());
+			_jQuery(PAGER_SELECTOR).html(jData.find(PAGER_SELECTOR).html());
 
 			log('ok');
 
@@ -79,36 +79,43 @@ var scrollerTask = function () {
 		});
 	};
 
-	if (typeof unsafeWindow != 'undefined') {
-		_window = unsafeWindow;
-		jQuery  = unsafeWindow.jQuery;
-	}
-	else {
-		_window = window;
-		jQuery  = _window.jQuery;
-		$.noConflict();
-	}
+	var initialize = function() {
 
-	log('start');
-
-	// не запускаем скрипт во фреймах
-	if (_window.self != _window.top){
-		log('frame');
-		return;
-	}
-	else if (!hasPhotoGrid()) {
-		log('pager not found');
-		return;
-	}
-
-	jQuery(document).scroll(function () {
-		var scrollMaxY = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-
-		// Start loading approx 200px from the end of the page.
-		if (window.scrollY > scrollMaxY - 200) {
-			scrollPhotoGrid();
+		if (typeof unsafeWindow != 'undefined') {
+			// firefox
+			_window = unsafeWindow;
 		}
-	});
+		else {
+			// google chrome
+			_window = window;
+			$.noConflict();
+		}
+
+		_jQuery = _window.jQuery;
+
+		// не запускаем скрипт во фреймах
+		if (_window.self != _window.top){
+			log('frame');
+			return;
+		}
+		else if (!hasPhotoGrid()) {
+			log('pager not found');
+			return;
+		}
+
+		_jQuery(document).scroll(function () {
+			var scrollMaxY = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+
+			// Start loading approx 200px from the end of the page.
+			if (window.scrollY > scrollMaxY - 200) {
+				scrollPhotoGrid();
+			}
+		});
+	};
+
+	log('photosight infinite scroll v' + version );
+
+	initialize();
 };
 
 if (navigator.userAgent.match(/Firefox/)) {
@@ -116,12 +123,7 @@ if (navigator.userAgent.match(/Firefox/)) {
 }
 else if (navigator.userAgent.match(/Chrome/)) {
 	var script = document.createElement("script");
-	script.setAttribute("src", "http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js");
-	script.addEventListener('load', function () {
-		var script = document.createElement("script");
-		script.textContent = "(" + scrollerTask.toString() + ")();";
-		document.body.appendChild(script);
-	}, false);
+	script.textContent = "(" + scrollerTask.toString() + ")();";
 	document.body.appendChild(script);
 }
 else {
