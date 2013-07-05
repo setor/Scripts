@@ -2,7 +2,7 @@
 // @name          photosight_infscroll
 // @description   Бесконечный скроллинг на сайте photosight.ru
 // @author        Sergei Kuznetsov
-// @version       1.1
+// @version       1.2
 // @namespace     net.setor.photosignt
 // @include       http://www.photosight.ru/*
 // ==/UserScript==
@@ -14,7 +14,7 @@ var scrollerTask = function () {
 	var NEXTPAGE_SELECTOR = PAGER_SELECTOR + ' .fr.ar a';
 
 	var DEBUG_MODE = false;
-	var version    = '1.1';
+	var version    = '1.2';
 
 	var stop     = false;
 	var pause    = false;
@@ -88,18 +88,17 @@ var scrollerTask = function () {
 		else {
 			// google chrome
 			_window = window;
-			$.noConflict();
 		}
 
 		_jQuery = _window.jQuery;
 
 		// не запускаем скрипт во фреймах
 		if (_window.self != _window.top){
-			log('frame');
+			log('Error: photosight in frame');
 			return;
 		}
 		else if (!hasPhotoGrid()) {
-			log('pager not found');
+			log('Error: photosight pager not found');
 			return;
 		}
 
