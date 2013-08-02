@@ -2,7 +2,7 @@
 // @name          photosight_infscroll
 // @description   Бесконечный скроллинг на сайте photosight.ru
 // @author        Sergei Kuznetsov
-// @version       1.2
+// @version       1.3
 // @namespace     net.setor.photosignt
 // @include       http://www.photosight.ru/*
 // ==/UserScript==
@@ -65,10 +65,12 @@ var scrollerTask = function () {
 
 			_window.history.replaceState(nextPage, document.title, nextPage);
 
-			var jData = _jQuery(data);
+			var dataGrid = _jQuery(data).find(GRID_SELECTOR);
 
 			// Дополняем текущий список новыми фотками
-			_jQuery(GRID_SELECTOR).append(jData.find(GRID_SELECTOR).html());
+			_jQuery(GRID_SELECTOR).append(dataGrid.html());
+
+			addGridEvents(_jQuery(GRID_SELECTOR));
 
 			// Заменяем старый пагинатор новым
 			_jQuery(PAGER_SELECTOR).html(jData.find(PAGER_SELECTOR).html());
@@ -76,6 +78,15 @@ var scrollerTask = function () {
 			log('ok');
 
 			pause = false;
+		});
+	};
+
+	var addGridEvents = function(grid) {
+
+		// Открывать все фотки в новом окне
+		grid.find('a').attr('target', '_blank');
+		grid.find('.oldpr').click(function() {
+			_jQuery(this).find('img:first').addClass('clicked');
 		});
 	};
 
@@ -101,6 +112,9 @@ var scrollerTask = function () {
 			log('Error: photosight pager not found');
 			return;
 		}
+
+		_jQuery('head').append('<style type="text/css">.clicked {border: 2px solid red !important;}</style>');
+		addGridEvents(_jQuery(GRID_SELECTOR));
 
 		_jQuery(document).scroll(function () {
 			var scrollMaxY = document.documentElement.scrollHeight - document.documentElement.clientHeight;
