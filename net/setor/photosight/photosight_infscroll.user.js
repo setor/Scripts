@@ -65,7 +65,8 @@ var scrollerTask = function () {
 
 			_window.history.replaceState(nextPage, document.title, nextPage);
 
-			var dataGrid = _jQuery(data).find(GRID_SELECTOR);
+			var jData    = _jQuery(data);
+			var dataGrid = jData.find(GRID_SELECTOR);
 
 			// Дополняем текущий список новыми фотками
 			_jQuery(GRID_SELECTOR).append(dataGrid.html());
