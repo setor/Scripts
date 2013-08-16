@@ -2,7 +2,7 @@
 // @name          photosight_infscroll
 // @description   Бесконечный скроллинг на сайте photosight.ru
 // @author        Sergei Kuznetsov
-// @version       1.3
+// @version       1.5
 // @namespace     net.setor.photosignt
 // @include       http://www.photosight.ru/*
 // ==/UserScript==
@@ -120,8 +120,8 @@ var scrollerTask = function () {
 		_jQuery(document).scroll(function () {
 			var scrollMaxY = document.documentElement.scrollHeight - document.documentElement.clientHeight;
 
-			// Start loading approx 200px from the end of the page.
-			if (window.scrollY > scrollMaxY - 200) {
+			// Start loading approx 650 from the end of the page.
+			if (window.scrollY > scrollMaxY - 650) {
 				scrollPhotoGrid();
 			}
 		});
